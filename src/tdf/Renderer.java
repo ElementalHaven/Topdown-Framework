@@ -46,33 +46,40 @@ public class Renderer extends JComponent {
 	private static final int	DEFAULT_HEIGHT	= 720;
 
 	private class GridLines extends Renderable {
-
-		@Override
-		public void render(Graphics2D g, Config config) {
-			g.setStroke(new BasicStroke((float) scale));
-
+		private void render(Graphics2D g, int squareSize, Config config) {
 			int gridStart = (int) virtualLeft;
-			gridStart -= (gridStart % config.gridSizeMinor);
+			gridStart -= (gridStart % squareSize);
 			Line2D.Float line = new Line2D.Float();
 			line.y1 = (float) virtualTop;
 			line.y2 = (float) virtualBottom;
-			for(int x = gridStart; x <= virtualRight; x += config.gridSizeMinor) {
+			for(int x = gridStart; x <= virtualRight; x += squareSize) {
 				line.x1 = line.x2 = x;
 				g.setColor(config.gridLineColor(x));
 				g.draw(line);
 			}
 
 			gridStart = (int) virtualBottom;
-			gridStart -= (gridStart % config.gridSizeMinor);
+			gridStart -= (gridStart % squareSize);
 			line.x1 = (float) virtualLeft;
 			line.x2 = (float) virtualRight;
-			for(int y = gridStart; y <= virtualTop; y += config.gridSizeMinor) {
+			for(int y = gridStart; y <= virtualTop; y += squareSize) {
 				line.y1 = line.y2 = y;
 				g.setColor(config.gridLineColor(y));
 				g.draw(line);
 			}
 		}
-		
+
+		@Override
+		public void render(Graphics2D g, Config config) {
+			g.setStroke(new BasicStroke((float) scale));
+			
+			int squareSize = config.gridSizeMinor;
+			if(squareSize / scale < 5) {
+				squareSize *= config.gridSizeMajor;
+			}
+			
+			render(g, squareSize, config);
+		}
 	}
 	
 	private Config						nextConfig		= new Config();
@@ -105,6 +112,8 @@ public class Renderer extends JComponent {
 
 	public Renderer() {
 		setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+		// prevent a dimension of 0 for autoscale purposes
+		setMinimumSize(new Dimension(1, 1));
 		MouseAdapter adapter = new MouseAdapter() {
 			private int x, y;
 			
@@ -265,8 +274,10 @@ public class Renderer extends JComponent {
 	public void positionAndScaleToFitContent(Rectangle contentBounds) {
 		offsetX = contentBounds.x + contentBounds.width / 2.0f;
 		offsetY = contentBounds.y + contentBounds.height / 2.0f;
-		
-		// TODO set scale as well
+
+		float widthScale = contentBounds.width / (float) width;
+		float heightScale = contentBounds.height / (float) height;
+		scale = Math.max(widthScale, heightScale);
 		
 		repaint();
 	}

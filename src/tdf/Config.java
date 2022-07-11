@@ -260,6 +260,11 @@ public class Config {
 																renderer.clear();
 																renderer.repaint();
 															});
+	private KeyBinding			bindingGrid				= new KeyBinding("G", "DEFAULT:GRID", () -> {
+		drawGrid = !drawGrid;
+		setModified();
+		renderer.repaint();
+	});
 
 	/**
 	 * Create a new config object with a default config file of "config.ini"
@@ -298,6 +303,7 @@ public class Config {
 		this.renderer = renderer;
 		renderer.addKeyBinding(bindingConfig);
 		renderer.addKeyBinding(bindingEmpty);
+		renderer.addKeyBinding(bindingGrid);
 		load();
 		renderer.setConfig(this);
 	}
@@ -368,6 +374,9 @@ public class Config {
 				break;
 			case "keyconfig":
 				updateKeyBinding(bindingConfig, "Config update key", value);
+				break;
+			case "keygrid":
+				updateKeyBinding(bindingGrid, "Grid toggle key", value);
 				break;
 			case "centerresizeoncursor":
 				centerResizeOnCursor = valueAsBoolean(value);
@@ -452,6 +461,7 @@ public class Config {
 		config.gridSizeMinor = gridSizeMinor;
 		config.bindingConfig = bindingConfig;
 		config.bindingEmpty = bindingEmpty;
+		config.bindingGrid = bindingGrid;
 		config.renderer = renderer;
 	}
 
